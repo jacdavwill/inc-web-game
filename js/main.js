@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderWiki();
     renderResources();
     updateCurrencyDisplay();
+    updateVersionTag();
     
     // Auto-save functionality
     setInterval(() => {
@@ -92,6 +93,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, CONFIG.AUTO_SAVE_INTERVAL);
 });
+
+// Version Tag - shows app version and latest commit hash
+async function updateVersionTag() {
+    const tagEl = document.getElementById('version-tag');
+    if (!tagEl) return;
+    
+    const version = 'v1.0.0';
+    try {
+        const response = await fetch('https://api.github.com/repos/jacdavwill/inc-web-game/commits/main');
+        if (!response.ok) {
+            throw new Error('GitHub API error');
+        }
+        const data = await response.json();
+        const sha = data.sha ? data.sha.substring(0, 8) : 'unknown';
+        tagEl.textContent = `${version} • ${sha}`;
+    } catch (e) {
+        tagEl.textContent = `${version} • offline`;
+    }
+}
 
 // Tab Management
 function switchTab(tabName) {

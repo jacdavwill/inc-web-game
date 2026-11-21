@@ -43,6 +43,20 @@ body {
     font-weight: 300;
 }
 
+#version-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+    z-index: 101;
+}
+
 /* Main Game Area */
 #game-container {
     flex: 1;
