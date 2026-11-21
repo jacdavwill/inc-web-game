@@ -1,6 +1,12 @@
 # Rise of the Hero - Incremental RPG Game
 
+[![Play Now](https://img.shields.io/badge/Play-Now-1f6feb?style=for-the-badge&label=Play%20Now)](https://jacdavwill.github.io/inc-web-game/)
+
 An incremental RPG browser game that can be hosted on GitHub Pages. The game allows you to upgrade technology through your history, from basic calculators to quantum processors.
+
+**🎮 Play the game live here:** [https://jacdavwill.github.io/inc-web-game/](https://jacdavwill.github.io/inc-web-game/)
+
+Or just view the source and play locally.
 
 ## Features
 
@@ -33,18 +39,16 @@ An incremental RPG browser game that can be hosted on GitHub Pages. The game all
 
 3. **Enable GitHub Pages**
    
-   Go to your repository on GitHub and set the branch to `main` (GitHub Pages defaults to main now).
+   Go to your repository on GitHub and set **Settings → Pages** → Source to **GitHub Actions**.
 
 4. **Configure the site**
    
-   In the repository settings, under "Pages":
-   - Select "Deploy from a branch"
-   - Branch: `main` (or `master` if you're using the legacy setting)
-   - Folder: `/`
+   The workflow at `.github/workflows/deploy.yml` is automatically triggered on push to the `main` branch.
 
 5. **Deploy**
    
-   GitHub will automatically deploy your site when you make commits to the main branch.
+   GitHub Actions will automatically build and deploy the site. Wait ~2 minutes, then visit:
+   `https://<your-username>.github.io/<repo-name>/`
 
 ### Alternative Deployment Methods
 
@@ -90,7 +94,8 @@ inc-web-game/
 ├── js/
 │   └── main.js         # Game logic and state management
 ├── .github/
-│   └── PAGES.yml       # GitHub Pages config
+│   └── workflows/
+│       └── deploy.yml  # GitHub Actions config
 ├── package.json         # npm package info
 └── README.md           # This file
 ```
