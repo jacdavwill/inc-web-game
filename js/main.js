@@ -22,7 +22,8 @@ const defaultUpgrades = [
         description: 'Start your journey with a simple calculator.',
         baseCost: 15,
         purchased: false,
-        boughtAt: null
+        boughtAt: null,
+        count: 1
     },
     {
         id: 'upgrade-2',
@@ -31,7 +32,8 @@ const defaultUpgrades = [
         description: 'Upgrade your computing power!',
         baseCost: 100,
         purchased: false,
-        boughtAt: null
+        boughtAt: null,
+        count: 1
     },
     {
         id: 'upgrade-3',
@@ -40,7 +42,8 @@ const defaultUpgrades = [
         description: 'The most powerful computer in your sector.',
         baseCost: 500,
         purchased: false,
-        boughtAt: null
+        boughtAt: null,
+        count: 1
     },
     {
         id: 'upgrade-4',
@@ -49,7 +52,8 @@ const defaultUpgrades = [
         description: 'Harness the power of quantum computing.',
         baseCost: 2000,
         purchased: false,
-        boughtAt: null
+        boughtAt: null,
+        count: 1
     }
 ];
 
@@ -93,9 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Game Logic Functions
-function calculateCost(upgrade, baseMultiplier) {
-    const multiplier = upgrade.multiplier || baseMultiplier;
-    return Math.floor(baseCost * (Math.pow(multiplier, upgrade.count - 1)));
+function calculateCost(upgrade) {
+    const count = upgrade.count || 1;
+    const multiplier = upgrade.multiplier;
+    const baseCost = upgrade.baseCost;
+    return Math.floor(baseCost * Math.pow(multiplier, count - 1));
 }
 
 function getBaseCost(upgradeId) {
@@ -161,7 +167,7 @@ function renderUpgrades() {
         
         const currentCostValue = document.createElement('span');
         currentCostValue.className = 'current';
-        currentCostValue.textContent = '$' + formatNumber(calculateCost(upgrade, upgrade.multiplier));
+        currentCostValue.textContent = '$' + formatNumber(calculateCost(upgrade));
         costsDiv.appendChild(currentCostValue);
         
         const purchasedCostDiv = document.createElement('div');
@@ -247,19 +253,20 @@ function updateCurrencyDisplay() {
 
 function purchaseUpgrade(upgradeId) {
     const upgrade = gameState.upgrades.find(u => u.id === upgradeId);
-    if (!upgrade || !gameState.credits || !gameState.credits > calculateCost(upgrade, upgrade.multiplier)) {
+    if (!upgrade || !gameState.credits || !gameState.credits > calculateCost(upgrade)) {
         return false;
     }
 
     // Deduct credits
-    gameState.credits -= calculateCost(upgrade, upgrade.multiplier);
+    gameState.credits -= calculateCost(upgrade);
     
     // Mark as purchased
     upgrade.purchased = true;
+    upgrade.count = (upgrade.count || 0) + 1;
     
     // Calculate new total credits (for display purposes)
     const multiplierFactor = 1 + ((upgrade.multiplier - 1) * (gameState.stats.totalUpgrades || 0));
-    gameState.credits += calculateCost(upgrade, upgrade.multiplier) * multiplierFactor;
+    gameState.credits += calculateCost(upgrade) * multiplierFactor;
 
     // Update stats
     if (gameState.stats.level < gameState.highestLevel) {
@@ -348,6 +355,31 @@ function toggleForm() {
     const panel = document.getElementById('settings-panel');
     panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
 }
+
+// Form Submission Handler for Adding New Upgrades
+document.getElementById('new-upgrade-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('new-upgrade-name').value;
+    const cost = parseInt(document.getElementById('new-upgrade-cost').value) || 10;
+    const multiplier = parseFloat(document.getElementById('new-upgrade-multiplier').value) || 1.5;
+    const description = document.getElementById('new-upgrade-description').value;
+    
+    const newUpgrade = {
+        id: 'upgrade-' + Date.now(),
+        name: name,
+        multiplier: multiplier,
+        description: description || 'A powerful new upgrade for your hero!',
+        baseCost: cost,
+        purchased: false,
+        boughtAt: null,
+        count: 1
+    };
+    
+    gameState.upgrades.push(newUpgrade);
+    renderUpgrades();
+    saveGame();
+});
 
 // Error handling
 document.addEventListener('error', (e) => {

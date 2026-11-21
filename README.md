@@ -1,12 +1,16 @@
 # Rise of the Hero - Incremental RPG Game
 
-[![Play Now](https://img.shields.io/badge/Play-Now-1f6feb?style=for-the-badge&label=Play%20Now)](https://jacdavwill.github.io/inc-web-game/)
-
-An incremental RPG browser game that can be hosted on GitHub Pages. The game allows you to upgrade technology through your history, from basic calculators to quantum processors.
+<div align="center">
+  <a href="https://jacdavwill.github.io/inc-web-game/" target="_blank">
+    <img src="https://img.shields.io/badge/Play-Now-1f6feb?style=for-the-badge&label=Play%20Now" alt="Play Now" />
+  </a>
+</div>
 
 **🎮 Play the game live here:** [https://jacdavwill.github.io/inc-web-game/](https://jacdavwill.github.io/inc-web-game/)
 
 Or just view the source and play locally.
+
+An incremental RPG browser game that can be hosted on GitHub Pages. The game allows you to upgrade technology through your history, from basic calculators to quantum processors.
 
 ## Features
 
