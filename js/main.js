@@ -100,17 +100,21 @@ async function updateVersionTag() {
     if (!tagEl) return;
     
     const version = 'v1.0.0';
+    let sha = 'unknown';
     try {
-        const response = await fetch('https://api.github.com/repos/jacdavwill/inc-web-game/commits/main');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const response = await fetch('https://api.github.com/repos/jacdavwill/inc-web-game/commits/main', { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (!response.ok) {
             throw new Error('GitHub API error');
         }
         const data = await response.json();
-        const sha = data.sha ? data.sha.substring(0, 8) : 'unknown';
-        tagEl.textContent = `${version} • ${sha}`;
+        sha = data.sha ? data.sha.substring(0, 8) : 'unknown';
     } catch (e) {
-        tagEl.textContent = `${version} • offline`;
+        sha = 'offline';
     }
+    tagEl.textContent = `${version} • ${sha}`;
 }
 
 // Tab Management
