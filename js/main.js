@@ -569,8 +569,10 @@ function startMining(nodeId) {
     node.miningState = 'mining';
     node.miningProgress = 0;
     
+    // Mining duration: 1 second per quantity for common resources (scales by rarity)
+    const durationMs = node.quantity * resource.miningTime;
     const tickInterval = setInterval(() => {
-        const increment = 100 / (resource.miningTime / CONFIG.MINE_TICK_MS);
+        const increment = 100 / (durationMs / CONFIG.MINE_TICK_MS);
         node.miningProgress += increment;
         if (node.miningProgress >= 100) {
             clearInterval(node.miningInterval);
