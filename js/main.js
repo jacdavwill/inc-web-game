@@ -436,8 +436,6 @@ function renderDungeon() {
     dungeonActive.style.display = 'block';
     
     const dungeon = getDungeonLevel(gameState.dungeon.currentLevel.level);
-    const completeBtn = document.getElementById('btn-complete-dungeon');
-    const exitBtn = document.getElementById('btn-exit-dungeon');
     
     document.getElementById('dungeon-active-header').innerHTML = `
         <h2>Dungeon Level ${dungeon.level}: ${dungeon.name}</h2>
@@ -446,9 +444,6 @@ function renderDungeon() {
             <button id="btn-complete-dungeon" class="btn-complete-dungeon" ${gameState.dungeon.nodes.length > 0 ? 'disabled' : ''}>Complete Dungeon</button>
         </div>
     `;
-    
-    exitBtn.addEventListener('click', exitDungeon);
-    completeBtn.addEventListener('click', completeDungeon);
 }
 
 function renderResourceNodes() {
@@ -788,6 +783,20 @@ document.querySelectorAll('.tab').forEach(tab => {
         switchTab(tab.dataset.tab);
     });
 });
+
+// Event Delegation for Dungeon Action Buttons (Exit Early / Complete Dungeon)
+const dungeonActiveEl = document.getElementById('dungeon-active');
+if (dungeonActiveEl) {
+    dungeonActiveEl.addEventListener('click', (e) => {
+        const exitBtn = e.target.closest('#btn-exit-dungeon');
+        const completeBtn = e.target.closest('#btn-complete-dungeon');
+        if (exitBtn) {
+            exitDungeon();
+        } else if (completeBtn) {
+            completeDungeon();
+        }
+    });
+}
 
 // Error handling
 document.addEventListener('error', (e) => {
