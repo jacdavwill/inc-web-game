@@ -18,6 +18,7 @@
         <main id="game-container">
             <div class="tabs">
                 <button class="tab active" data-tab="dungeon">Dungeon</button>
+                <button class="tab" data-tab="resources">Resources</button>
                 <button class="tab" data-tab="upgrade">Upgrades</button>
                 <button class="tab" data-tab="stats">Stats</button>
                 <button class="tab" data-tab="history">History</button>
@@ -35,6 +36,13 @@
                     <div id="dungeon-active-header"></div>
                     <div id="resource-nodes-container"></div>
                 </div>
+            </section>
+
+            <!-- Resources Tab -->
+            <section id="resources-section" class="tab-content">
+                <h2>Your Resources</h2>
+                <p class="tab-description">Track all the magical resources you have mined or siphoned from the depths.</p>
+                <div id="resources-list"></div>
             </section>
 
             <!-- Upgrades Tab -->
@@ -56,8 +64,6 @@
             <section id="stats-section" class="tab-content">
                 <h2>Your Statistics</h2>
                 <div id="stats-display"></div>
-                <h3>Your Resources</h3>
-                <p id="owned-resources">None</p>
             </section>
 
             <!-- History Tab -->

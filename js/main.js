@@ -71,6 +71,7 @@ const dungeonActive = document.getElementById('dungeon-active');
 const resourceNodesContainer = document.getElementById('resource-nodes-container');
 const wikiResourcesList = document.getElementById('wiki-resources-list');
 const ownedResourcesDisplay = document.getElementById('owned-resources');
+const resourcesList = document.getElementById('resources-list');
 
 // Initialize Game
 document.addEventListener('DOMContentLoaded', () => {
@@ -81,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderStats();
     renderEpics();
     renderWiki();
+    renderResources();
     updateCurrencyDisplay();
     
     // Auto-save functionality
@@ -256,6 +258,45 @@ function renderStats() {
     }
 }
 
+function renderResources() {
+    resourcesList.innerHTML = '';
+    
+    const resourceIds = Object.keys(gameState.resources);
+    if (resourceIds.length === 0) {
+        resourcesList.innerHTML = '<p class="tab-description">No resources mined or siphoned yet. Enter a dungeon to gather magical resources!</p>';
+        return;
+    }
+    
+    resourceIds.forEach(resourceId => {
+        const resource = getResource(resourceId);
+        if (!resource) return;
+        
+        const resourceItem = document.createElement('div');
+        resourceItem.className = 'resource-card';
+        
+        const name = document.createElement('h3');
+        name.textContent = resource.name;
+        
+        const amount = document.createElement('p');
+        amount.className = 'resource-amount';
+        amount.textContent = `Amount: ${formatNumber(gameState.resources[resourceId])} ${resource.type === 'Mana' ? 'MP' : 'units'}`;
+        
+        const rarity = document.createElement('p');
+        rarity.className = 'wiki-rarity';
+        rarity.textContent = `Rarity: ${resource.rarity}`;
+        
+        const time = document.createElement('p');
+        time.className = 'wiki-time';
+        time.textContent = `Extraction Time: ${(resource.miningTime / 1000).toFixed(1)}s`;
+        
+        resourceItem.appendChild(name);
+        resourceItem.appendChild(amount);
+        resourceItem.appendChild(rarity);
+        resourceItem.appendChild(time);
+        resourcesList.appendChild(resourceItem);
+    });
+}
+
 function renderEpics() {
     epicsList.innerHTML = '';
     
@@ -403,25 +444,17 @@ function renderResourceNodes() {
         quantity.className = 'resource-quantity';
         quantity.textContent = `Quantity: ${formatNumber(node.quantity)}`;
         
-        const progressContainer = document.createElement('div');
-        progressContainer.className = 'progress-container';
-        const progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar';
-        progressBar.style.width = node.miningState === 'mining' ? node.miningProgress + '%' : '0%';
-        progressContainer.appendChild(progressBar);
-        
         const status = document.createElement('div');
         status.className = 'mining-status';
         status.textContent = node.miningState === 'mining' ? `Mining... ${Math.floor(node.miningProgress)}%` : 'Not Mining';
         
         nodeDiv.appendChild(name);
         nodeDiv.appendChild(quantity);
-        nodeDiv.appendChild(progressContainer);
         nodeDiv.appendChild(status);
         
-        // Mine button
+        // Mine/Siphon button
         const mineBtn = document.createElement('button');
-        mineBtn.textContent = node.miningState === 'mining' ? 'Stop' : 'Mine';
+        mineBtn.textContent = node.miningState === 'mining' ? 'Stop' : (node.resource.type === 'Mana' ? 'Siphon' : 'Mine');
         mineBtn.addEventListener('click', () => {
             if (node.miningState === 'mining') {
                 stopMining(node.id);
@@ -431,6 +464,15 @@ function renderResourceNodes() {
             renderResourceNodes();
         });
         nodeDiv.appendChild(mineBtn);
+        
+        // Progress bar at bottom
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'progress-container';
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressBar.style.width = node.miningState === 'mining' ? node.miningProgress + '%' : '0%';
+        progressContainer.appendChild(progressBar);
+        nodeDiv.appendChild(progressContainer);
         
         nodeDiv.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') return;
@@ -491,6 +533,20 @@ function startMining(nodeId) {
     if (!node || node.cleared) return;
     
     const resource = getResource(node.resourceId);
+    if (!resource) return;
+    
+    // Stop mining on any other node
+    gameState.dungeon.nodes.forEach(n => {
+        if (n.id !== nodeId && n.miningState === 'mining') {
+            if (n.miningInterval) {
+                clearInterval(n.miningInterval);
+                n.miningInterval = null;
+            }
+            n.miningState = 'idle';
+            n.miningProgress = 0;
+        }
+    });
+    
     node.miningState = 'mining';
     node.miningProgress = 0;
     
@@ -591,6 +647,7 @@ function completeDungeon() {
     generateEpicMoment();
     renderDungeonLevels();
     renderStats();
+    renderResources();
     updateCurrencyDisplay();
 }
 
@@ -600,6 +657,7 @@ function exitDungeon() {
     gameState.dungeon.completed = false;
     renderDungeonLevels();
     renderStats();
+    renderResources();
 }
 
 // Generate Epic Moment
