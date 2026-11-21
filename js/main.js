@@ -473,7 +473,7 @@ function renderResourceNodes() {
         
         // Mine/Siphon button
         const mineBtn = document.createElement('button');
-        mineBtn.textContent = node.miningState === 'mining' ? 'Stop' : (node.resource.type === 'Mana' ? 'Siphon' : 'Mine');
+        mineBtn.textContent = node.miningState === 'mining' ? 'Stop' : (resource.type === 'Mana' ? 'Siphon' : 'Mine');
         mineBtn.addEventListener('click', () => {
             if (node.miningState === 'mining') {
                 stopMining(node.id);
