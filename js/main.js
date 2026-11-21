@@ -10,57 +10,53 @@ let gameState = {
         highestLevel: 1,
         highestCredits: 100
     },
-    epics: []
+    epics: [],
+    dungeon: {
+        unlockedLevel: 1,
+        currentLevel: null,
+        nodes: [],
+        completed: false,
+        lastCompletedLevel: null,
+        completedLevels: []
+    },
+    resources: {}
 };
+
+// Resource Definitions - 10 magical metals and mana
+const RESOURCES = [
+    { id: 'ironwood', name: 'Ironwood', type: 'Metal', rarity: 'Common', description: 'A sturdy magical metal infused with earth elemental energy. Great for basic enchanted gear.', miningTime: 1000, value: 10 },
+    { id: 'arcane_mana', name: 'Arcane Mana', type: 'Mana', rarity: 'Common', description: 'Raw magical energy, pure and untapped. The foundation of all arcane practice.', miningTime: 1000, value: 10 },
+    { id: 'mithral', name: 'Mithral', type: 'Metal', rarity: 'Uncommon', description: 'A lightweight, ultra-strong magical alloy. Highly prized for armor crafting.', miningTime: 2000, value: 25 },
+    { id: 'adamantite', name: 'Adamantite', type: 'Metal', rarity: 'Uncommon', description: 'An incredibly dense magical metal, nearly unbreakable. For advanced equipment.', miningTime: 2000, value: 25 },
+    { id: 'starsteel', name: 'Starsteel', type: 'Metal', rarity: 'Rare', description: 'Forged from fallen stars, this metal radiates arcane power. Fearsome for war.', miningTime: 3000, value: 40 },
+    { id: 'mooniron', name: 'Mooniron', type: 'Metal', rarity: 'Rare', description: 'Moon-touched metal with lunar properties, enhancing spellcasters and warriors.', miningTime: 3000, value: 40 },
+    { id: 'dragonbone', name: 'Dragonbone', type: 'Metal', rarity: 'Rare', description: 'Dragon remains, magically hardened. Fearsome and powerful beyond compare.', miningTime: 3000, value: 40 },
+    { id: 'astralite', name: 'Astralite', type: 'Metal', rarity: 'Very Rare', description: 'Astral projection material, barely found in the deepest voids of reality.', miningTime: 5000, value: 60 },
+    { id: 'voidiron', name: 'Voidiron', type: 'Metal', rarity: 'Very Rare', description: 'Iron from the void between worlds. Unstable but immensely powerful.', miningTime: 5000, value: 60 },
+    { id: 'chronosilver', name: 'Chronosilver', type: 'Metal', rarity: 'Very Rare', description: 'Silver from the time stream. Manipulates temporal energy in wondrous ways.', miningTime: 5000, value: 60 }
+];
+
+// Dungeon Levels Configuration
+const DUNGEON_LEVELS = [
+    { level: 1, name: 'The Cursed Caverns', description: 'A damp network of caves filled with common magical ores.', availableResources: ['ironwood', 'arcane_mana'] },
+    { level: 2, name: 'The Iron Warrens', description: 'An abandoned iron mine rich with uncommon magical metals.', availableResources: ['ironwood', 'arcane_mana', 'mithral', 'adamantite'] },
+    { level: 3, name: 'The Star Depths', description: 'Deep beneath the earth where star-forged metals lie.', availableResources: ['ironwood', 'arcane_mana', 'mithral', 'adamantite', 'starsteel', 'mooniron', 'dragonbone'] },
+    { level: 4, name: 'The Void Lair', description: 'The deepest dungeon where void and chronal materials await.', availableResources: ['ironwood', 'arcane_mana', 'mithral', 'adamantite', 'starsteel', 'mooniron', 'dragonbone', 'astralite', 'voidiron', 'chronosilver'] }
+];
 
 // Initial Upgrades - Incremental RPG progression
 const defaultUpgrades = [
-    {
-        id: 'upgrade-1',
-        name: 'Basic Calculator',
-        multiplier: 1.0,
-        description: 'Start your journey with a simple calculator.',
-        baseCost: 15,
-        purchased: false,
-        boughtAt: null,
-        count: 1
-    },
-    {
-        id: 'upgrade-2',
-        name: 'Advanced Computer',
-        multiplier: 1.4,
-        description: 'Upgrade your computing power!',
-        baseCost: 100,
-        purchased: false,
-        boughtAt: null,
-        count: 1
-    },
-    {
-        id: 'upgrade-3',
-        name: 'Supercomputer',
-        multiplier: 2.0,
-        description: 'The most powerful computer in your sector.',
-        baseCost: 500,
-        purchased: false,
-        boughtAt: null,
-        count: 1
-    },
-    {
-        id: 'upgrade-4',
-        name: 'Quantum Processor',
-        multiplier: 2.8,
-        description: 'Harness the power of quantum computing.',
-        baseCost: 2000,
-        purchased: false,
-        boughtAt: null,
-        count: 1
-    }
+    { id: 'upgrade-1', name: 'Basic Calculator', multiplier: 1.0, description: 'Start your journey with a simple calculator.', baseCost: 15, purchased: false, boughtAt: null, count: 1 },
+    { id: 'upgrade-2', name: 'Advanced Computer', multiplier: 1.4, description: 'Upgrade your computing power!', baseCost: 100, purchased: false, boughtAt: null, count: 1 },
+    { id: 'upgrade-3', name: 'Supercomputer', multiplier: 2.0, description: 'The most powerful computer in your sector.', baseCost: 500, purchased: false, boughtAt: null, count: 1 },
+    { id: 'upgrade-4', name: 'Quantum Processor', multiplier: 2.8, description: 'Harness the power of quantum computing.', baseCost: 2000, purchased: false, boughtAt: null, count: 1 }
 ];
 
 // Game Configuration
 const CONFIG = {
     SAVE_KEY: 'rise_of_the_hero_save',
-    AUTO_SAVE_INTERVAL: 30000 // 30 seconds
+    AUTO_SAVE_INTERVAL: 30000, // 30 seconds
+    MINE_TICK_MS: 50
 };
 
 // DOM Elements
@@ -70,13 +66,21 @@ const epicsList = document.getElementById('epic-moments-list');
 const currentTimestamp = document.getElementById('current-time');
 const currencyDisplay = document.getElementById('currency-display');
 const totalUpgradesDisplay = document.getElementById('total-upgrades');
+const dungeonLevelsList = document.getElementById('dungeon-levels-list');
+const dungeonActive = document.getElementById('dungeon-active');
+const resourceNodesContainer = document.getElementById('resource-nodes-container');
+const wikiResourcesList = document.getElementById('wiki-resources-list');
+const ownedResourcesDisplay = document.getElementById('owned-resources');
 
 // Initialize Game
 document.addEventListener('DOMContentLoaded', () => {
     loadGame();
+    switchTab('dungeon');
+    renderDungeonLevels();
     renderUpgrades();
     renderStats();
     renderEpics();
+    renderWiki();
     updateCurrencyDisplay();
     
     // Auto-save functionality
@@ -85,16 +89,21 @@ document.addEventListener('DOMContentLoaded', () => {
             saveGame();
         }
     }, CONFIG.AUTO_SAVE_INTERVAL);
-
-    // Check for saved game on load
-    setTimeout(() => {
-        const savedData = localStorage.getItem(CONFIG.SAVE_KEY);
-        if (!savedData && defaultUpgrades.length > 0) {
-            gameState.upgrades = JSON.parse(JSON.stringify(defaultUpgrades));
-            saveGame();
-        }
-    }, 100);
 });
+
+// Tab Management
+function switchTab(tabName) {
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+    });
+    
+    contents.forEach(content => {
+        content.classList.toggle('active', content.id === tabName + '-section');
+    });
+}
 
 // Game Logic Functions
 function calculateCost(upgrade) {
@@ -117,26 +126,21 @@ function countUpgrades() {
     return count;
 }
 
+function getResource(resourceId) {
+    return RESOURCES.find(r => r.id === resourceId);
+}
+
+function getDungeonLevel(level) {
+    return DUNGEON_LEVELS.find(d => d.level === level);
+}
+
 // Render Functions
 function renderUpgrades() {
     upgradesList.innerHTML = '';
     
     gameState.upgrades.forEach(upgrade => {
         const upgradeItem = document.createElement('div');
-        upgradeItem.className = 'upgrade-item';
-        
-        if (upgrade.purchased) {
-            upgradeItem.classList.add('purchased');
-        } else {
-            // Add hover effect for non-purchased items
-            upgradeItem.addEventListener('mouseover', () => {
-                upgradeItem.style.transform = 'scale(1.05)';
-            });
-            
-            upgradeItem.addEventListener('mouseout', () => {
-                upgradeItem.style.transform = 'scale(1)';
-            });
-        }
+        upgradeItem.className = 'upgrade-item' + (upgrade.purchased ? ' purchased' : '');
 
         const header = document.createElement('div');
         header.className = 'upgrade-header';
@@ -188,6 +192,25 @@ function renderUpgrades() {
         upgradeItem.appendChild(costsDiv);
         upgradeItem.appendChild(purchasedBadge);
 
+        // Purchase button functionality
+        upgradeItem.addEventListener('click', () => {
+            if (!upgrade.purchased) {
+                const cost = calculateCost(upgrade);
+                if (gameState.credits >= cost) {
+                    gameState.credits -= cost;
+                    upgrade.purchased = true;
+                    upgrade.count = (upgrade.count || 0) + 1;
+                    gameState.stats.totalUpgrades++;
+                    gameState.stats.totalClicks++;
+                    generateEpicMoment();
+                    updateCurrencyDisplay();
+                    renderStats();
+                    renderUpgrades();
+                    saveGame();
+                }
+            }
+        });
+
         upgradesList.appendChild(upgradeItem);
     });
 }
@@ -200,7 +223,8 @@ function renderStats() {
         { label: 'Total XP', value: formatNumber(gameState.stats.xp) },
         { label: 'Total Credits Earned', value: formatNumber(gameState.credits) },
         { label: 'Highest Level Reached', value: formatNumber(gameState.stats.highestLevel) },
-        { label: 'Epic Moments', value: formatNumber(gameState.epics.length) }
+        { label: 'Epic Moments', value: formatNumber(gameState.epics.length) },
+        { label: 'Dungeon Levels Cleared', value: formatNumber(gameState.dungeon.lastCompletedLevel ? gameState.dungeon.lastCompletedLevel : 0) }
     ];
 
     statRows.forEach(row => {
@@ -217,6 +241,19 @@ function renderStats() {
         rowDiv.appendChild(valueSpan);
         statsDisplay.appendChild(rowDiv);
     });
+
+    if (ownedResourcesDisplay) {
+        let ownedText = '';
+        let hasAny = false;
+        for (const resourceId in gameState.resources) {
+            const resource = getResource(resourceId);
+            if (resource) {
+                ownedText += `${resource.name}: ${gameState.resources[resourceId]} | `;
+                hasAny = true;
+            }
+        }
+        ownedResourcesDisplay.textContent = hasAny ? ownedText : 'None';
+    }
 }
 
 function renderEpics() {
@@ -242,60 +279,336 @@ function renderEpics() {
     });
 }
 
-function updateCurrencyDisplay() {
-    currencyDisplay.textContent = formatNumber(gameState.credits);
-    totalUpgradesDisplay.textContent = formatNumber(countUpgrades());
+function renderWiki() {
+    wikiResourcesList.innerHTML = '';
     
-    // Update real-time clock
-    const options = { hour: 'numeric', minute: 'numeric' };
-    currentTimestamp.textContent = new Date().toLocaleTimeString(options);
+    RESOURCES.forEach(resource => {
+        const wikiCard = document.createElement('div');
+        wikiCard.className = 'wiki-card';
+        
+        const h3 = document.createElement('h3');
+        h3.textContent = resource.name;
+        
+        const typeSpan = document.createElement('span');
+        typeSpan.className = 'wiki-type';
+        typeSpan.textContent = `Type: ${resource.type}`;
+        
+        const desc = document.createElement('p');
+        desc.className = 'wiki-desc';
+        desc.textContent = resource.description;
+        
+        const rarityRow = document.createElement('p');
+        rarityRow.className = 'wiki-rarity-row';
+        rarityRow.innerHTML = `<span class="wiki-rarity">Rarity: ${resource.rarity}</span>`;
+        
+        const quantityRow = document.createElement('p');
+        quantityRow.className = 'wiki-quantity';
+        quantityRow.textContent = `Clears for: ${formatNumber(resource.value)} ${resource.type === 'Mana' ? 'MP' : 'units'}`;
+        
+        const timeRow = document.createElement('p');
+        timeRow.className = 'wiki-time';
+        timeRow.textContent = `Extraction Time: ${(resource.miningTime / 1000).toFixed(1)}s`;
+        
+        wikiCard.appendChild(h3);
+        wikiCard.appendChild(typeSpan);
+        wikiCard.appendChild(desc);
+        wikiCard.appendChild(rarityRow);
+        wikiCard.appendChild(quantityRow);
+        wikiCard.appendChild(timeRow);
+        
+        wikiResourcesList.appendChild(wikiCard);
+    });
 }
 
-function purchaseUpgrade(upgradeId) {
-    const upgrade = gameState.upgrades.find(u => u.id === upgradeId);
-    if (!upgrade || !gameState.credits || !gameState.credits > calculateCost(upgrade)) {
-        return false;
+// Dungeon Rendering
+function renderDungeonLevels() {
+    dungeonLevelsList.innerHTML = '';
+    
+    DUNGEON_LEVELS.forEach(dungeon => {
+        const dungeonCard = document.createElement('div');
+        dungeonCard.className = 'dungeon-card' + (dungeon.level > gameState.dungeon.unlockedLevel ? ' locked' : '');
+        
+        const h3 = document.createElement('h3');
+        h3.textContent = `Level ${dungeon.level}: ${dungeon.name}`;
+        
+        const levelInfo = document.createElement('p');
+        levelInfo.className = 'level-info';
+        levelInfo.textContent = dungeon.description;
+        
+        const resourcesPreview = document.createElement('div');
+        resourcesPreview.className = 'resources-preview';
+        const availableResources = dungeon.availableResources || RESOURCES.filter(r => r.rarity === 'Common').map(r => r.name);
+        resourcesPreview.textContent = `Resources: ${availableResources.join(', ')}`;
+        
+        const enterBtn = document.createElement('button');
+        enterBtn.className = 'btn-dungeon';
+        enterBtn.textContent = gameState.dungeon.completedLevels.includes(dungeon.level) ? 'Replay' : 'Enter Dungeon';
+        enterBtn.disabled = dungeon.level > gameState.dungeon.unlockedLevel ? true : false;
+        
+        if (!enterBtn.disabled) {
+            enterBtn.addEventListener('click', () => enterDungeon(dungeon.level));
+        }
+        
+        dungeonCard.appendChild(h3);
+        dungeonCard.appendChild(levelInfo);
+        dungeonCard.appendChild(resourcesPreview);
+        dungeonCard.appendChild(enterBtn);
+        
+        dungeonLevelsList.appendChild(dungeonCard);
+    });
+}
+
+function renderDungeon() {
+    if (!gameState.dungeon.currentLevel) {
+        // Show dungeon selection
+        dungeonActive.style.display = 'none';
+        dungeonLevelsList.style.display = 'block';
+        return;
     }
-
-    // Deduct credits
-    gameState.credits -= calculateCost(upgrade);
     
-    // Mark as purchased
-    upgrade.purchased = true;
-    upgrade.count = (upgrade.count || 0) + 1;
+    // Show active dungeon
+    dungeonLevelsList.style.display = 'none';
+    dungeonActive.style.display = 'block';
     
-    // Calculate new total credits (for display purposes)
-    const multiplierFactor = 1 + ((upgrade.multiplier - 1) * (gameState.stats.totalUpgrades || 0));
-    gameState.credits += calculateCost(upgrade) * multiplierFactor;
+    const dungeon = getDungeonLevel(gameState.dungeon.currentLevel.level);
+    const completeBtn = document.getElementById('btn-complete-dungeon');
+    const exitBtn = document.getElementById('btn-exit-dungeon');
+    
+    document.getElementById('dungeon-active-header').innerHTML = `
+        <h2>Dungeon Level ${dungeon.level}: ${dungeon.name}</h2>
+        <div id="dungeon-actions">
+            <button id="btn-exit-dungeon" class="btn-exit-dungeon">Exit Early</button>
+            <button id="btn-complete-dungeon" class="btn-complete-dungeon" ${gameState.dungeon.nodes.length > 0 ? 'disabled' : ''}>Complete Dungeon</button>
+        </div>
+    `;
+    
+    exitBtn.addEventListener('click', exitDungeon);
+    completeBtn.addEventListener('click', completeDungeon);
+}
 
-    // Update stats
-    if (gameState.stats.level < gameState.highestLevel) {
-        gameState.stats.level = Math.floor(Math.sqrt(gameState.stats.xp)) + 1;
-        gameState.stats.xp += 100;
+function renderResourceNodes() {
+    resourceNodesContainer.innerHTML = '';
+    
+    gameState.dungeon.nodes.forEach(node => {
+        const resource = getResource(node.resourceId);
+        const nodeDiv = document.createElement('div');
+        nodeDiv.className = 'resource-node' + (node.miningState === 'mining' ? ' mining' : ' selectable');
+        nodeDiv.dataset.nodeId = node.id;
+        
+        const name = document.createElement('div');
+        name.className = 'resource-name';
+        name.textContent = resource.name;
+        
+        const quantity = document.createElement('div');
+        quantity.className = 'resource-quantity';
+        quantity.textContent = `Quantity: ${formatNumber(node.quantity)}`;
+        
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'progress-container';
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressBar.style.width = node.miningState === 'mining' ? node.miningProgress + '%' : '0%';
+        progressContainer.appendChild(progressBar);
+        
+        const status = document.createElement('div');
+        status.className = 'mining-status';
+        status.textContent = node.miningState === 'mining' ? `Mining... ${Math.floor(node.miningProgress)}%` : 'Not Mining';
+        
+        nodeDiv.appendChild(name);
+        nodeDiv.appendChild(quantity);
+        nodeDiv.appendChild(progressContainer);
+        nodeDiv.appendChild(status);
+        
+        // Mine button
+        const mineBtn = document.createElement('button');
+        mineBtn.textContent = node.miningState === 'mining' ? 'Stop' : 'Mine';
+        mineBtn.addEventListener('click', () => {
+            if (node.miningState === 'mining') {
+                stopMining(node.id);
+            } else {
+                startMining(node.id);
+            }
+            renderResourceNodes();
+        });
+        nodeDiv.appendChild(mineBtn);
+        
+        nodeDiv.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            if (node.miningState === 'mining') {
+                stopMining(node.id);
+            } else {
+                startMining(node.id);
+            }
+            renderResourceNodes();
+        });
+        
+        resourceNodesContainer.appendChild(nodeDiv);
+    });
+}
+
+// Dungeon Game Logic
+function enterDungeon(level) {
+    const dungeon = getDungeonLevel(level);
+    if (!dungeon) return;
+    
+    // Reset complete button state
+    const completeBtn = document.getElementById('btn-complete-dungeon');
+    if (completeBtn) {
+        completeBtn.disabled = true;
+        completeBtn.textContent = 'Complete Dungeon';
     }
     
-    gameState.stats.totalUpgrades++;
-    gameState.stats.totalClicks += 1;
+    // Generate 3 random resource nodes
+    const availableResources = dungeon.availableResources || RESOURCES.filter(r => r.rarity === 'Common').map(r => r.id);
+    const nodes = [];
+    
+    for (let i = 0; i < 3; i++) {
+        const randomResourceId = availableResources[Math.floor(Math.random() * availableResources.length)];
+        const resource = getResource(randomResourceId);
+        const quantity = Math.floor(Math.random() * 41) + 10; // 10-50
+        
+        nodes.push({
+            id: 'node-' + Date.now() + '-' + i,
+            resourceId: randomResourceId,
+            quantity: quantity,
+            cleared: false,
+            miningState: 'idle',
+            miningProgress: 0,
+            miningInterval: null
+        });
+    }
+    
+    gameState.dungeon.currentLevel = dungeon;
+    gameState.dungeon.nodes = nodes;
+    gameState.dungeon.completed = false;
+    
+    renderDungeon();
+    renderResourceNodes();
+}
 
-    // Generate epic moment
-    generateEpicMoment();
+function startMining(nodeId) {
+    const node = gameState.dungeon.nodes.find(n => n.id === nodeId);
+    if (!node || node.cleared) return;
+    
+    const resource = getResource(node.resourceId);
+    node.miningState = 'mining';
+    node.miningProgress = 0;
+    
+    const tickInterval = setInterval(() => {
+        const increment = 100 / (resource.miningTime / CONFIG.MINE_TICK_MS);
+        node.miningProgress += increment;
+        if (node.miningProgress >= 100) {
+            clearInterval(node.miningInterval);
+            node.miningState = 'idle';
+            node.miningProgress = 100;
+            completeMining(node);
+        }
+        renderResourceNodes();
+    }, CONFIG.MINE_TICK_MS);
+    
+    node.miningInterval = tickInterval;
+}
 
-    updateCurrencyDisplay();
+function stopMining(nodeId) {
+    const node = gameState.dungeon.nodes.find(n => n.id === nodeId);
+    if (!node || node.cleared) return;
+    if (node.miningInterval) {
+        clearInterval(node.miningInterval);
+        node.miningInterval = null;
+    }
+    node.miningState = 'idle';
+    node.miningProgress = 0;
+}
+
+function completeMining(node) {
+    if (node.miningInterval) {
+        clearInterval(node.miningInterval);
+        node.miningInterval = null;
+    }
+    node.miningState = 'idle';
+    node.miningProgress = 100;
+    
+    const resource = getResource(node.resourceId);
+    if (!resource) return;
+    
+    // Gain resources
+    gameState.resources[node.resourceId] = (gameState.resources[node.resourceId] || 0) + node.quantity;
+    gameState.credits += node.quantity * 2; // Bonus credits for clearing nodes
+    
+    // Remove the node
+    gameState.dungeon.nodes = gameState.dungeon.nodes.filter(n => n.id !== node.id);
+    
+    // Re-render
+    renderResourceNodes();
     renderStats();
-    renderEpics();
-    renderUpgrades();
-    saveGame();
-
-    return true;
+    
+    // Check if all nodes cleared
+    if (gameState.dungeon.nodes.length === 0) {
+        gameState.dungeon.completed = true;
+        const completeBtn = document.getElementById('btn-complete-dungeon');
+        if (completeBtn) {
+            completeBtn.disabled = false;
+            completeBtn.textContent = 'Complete Dungeon';
+        }
+    }
 }
 
+function completeDungeon() {
+    if (!gameState.dungeon.completed) return;
+    
+    // Grant dungeon completion rewards
+    const dungeon = gameState.dungeon.currentLevel;
+    gameState.credits += 50; // Completion bonus
+    
+    // Generate epic moment
+    const epicNames = [
+        'First Galactic Explorer',
+        'Time Traveler',
+        'Quantum Pioneer',
+        'Virtual Reality Architect',
+        'AI Developer',
+        'Cybernetics Engineer'
+    ];
+    const randomEpic = {
+        name: epicNames[Math.floor(Math.random() * epicNames.length)],
+        level: gameState.stats.level,
+        updatedAt: new Date().toLocaleString()
+    };
+    gameState.epics.push(randomEpic);
+    
+    // Mark level as completed and unlock next
+    gameState.dungeon.completedLevels.push(dungeon.level);
+    gameState.dungeon.lastCompletedLevel = dungeon.level;
+    if (dungeon.level < DUNGEON_LEVELS.length) {
+        gameState.dungeon.unlockedLevel = dungeon.level + 1;
+    }
+    
+    // Exit dungeon
+    gameState.dungeon.currentLevel = null;
+    gameState.dungeon.nodes = [];
+    gameState.dungeon.completed = false;
+    
+    generateEpicMoment();
+    renderDungeonLevels();
+    renderStats();
+    updateCurrencyDisplay();
+}
+
+function exitDungeon() {
+    gameState.dungeon.currentLevel = null;
+    gameState.dungeon.nodes = [];
+    gameState.dungeon.completed = false;
+    renderDungeonLevels();
+    renderStats();
+}
+
+// Generate Epic Moment
 function generateEpicMoment() {
     const upgrades = gameState.upgrades.filter(u => u.purchased);
     if (upgrades.length === 0) {
         return;
     }
 
-    // Generate a random epic name based on purchased upgrades
     const epicNames = [
         'First Galactic Explorer',
         'Time Traveler',
@@ -311,7 +624,6 @@ function generateEpicMoment() {
         updatedAt: new Date().toLocaleString()
     };
 
-    // Check if this epic already exists
     if (!gameState.epics.find(e => e.name === randomEpic.name)) {
         gameState.epics.push(randomEpic);
     }
@@ -329,7 +641,6 @@ function loadGame() {
             const loadedState = JSON.parse(savedData);
             gameState = { ...gameState, ...loadedState };
             
-            // Restore default upgrades that might not exist in the load
             const defaultIds = defaultUpgrades.map(u => u.id);
             gameState.upgrades.forEach(u => {
                 if (!defaultIds.includes(u.id)) {
@@ -351,7 +662,6 @@ function formatNumber(num) {
 }
 
 function toggleForm() {
-    // Simple form toggle for mobile
     const panel = document.getElementById('settings-panel');
     panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
 }
@@ -381,10 +691,16 @@ document.getElementById('new-upgrade-form').addEventListener('submit', (e) => {
     saveGame();
 });
 
+// Tab Event Listeners
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        switchTab(tab.dataset.tab);
+    });
+});
+
 // Error handling
 document.addEventListener('error', (e) => {
     console.error('Game error:', e);
-    // In a real app, you might alert the user about the error
 });
 
 console.log('Rise of the Hero - Incremental RPG Loaded!');

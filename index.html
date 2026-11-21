@@ -17,13 +17,28 @@
         <!-- Main Game Area -->
         <main id="game-container">
             <div class="tabs">
-                <button class="tab active" data-tab="upgrade">Upgrades</button>
+                <button class="tab active" data-tab="dungeon">Dungeon</button>
+                <button class="tab" data-tab="upgrade">Upgrades</button>
                 <button class="tab" data-tab="stats">Stats</button>
                 <button class="tab" data-tab="history">History</button>
+                <button class="tab" data-tab="wiki">Wiki</button>
             </div>
 
+            <!-- Dungeon Tab -->
+            <section id="dungeon-section" class="tab-content active">
+                <h2>Enter the Dungeon</h2>
+                <p class="tab-description">Choose a dungeon level to enter. Deeper levels hold rarer resources.</p>
+                <div id="dungeon-levels-list"></div>
+                
+                <!-- Active Dungeon View -->
+                <div id="dungeon-active" style="display: none;">
+                    <div id="dungeon-active-header"></div>
+                    <div id="resource-nodes-container"></div>
+                </div>
+            </section>
+
             <!-- Upgrades Tab -->
-            <section id="upgrade-section" class="tab-content active">
+            <section id="upgrade-section" class="tab-content">
                 <div id="upgrades-list"></div>
                 <div class="add-upgrade-form">
                     <h3>Add New Upgrade</h3>
@@ -41,12 +56,20 @@
             <section id="stats-section" class="tab-content">
                 <h2>Your Statistics</h2>
                 <div id="stats-display"></div>
+                <h3>Your Resources</h3>
+                <p id="owned-resources">None</p>
             </section>
 
             <!-- History Tab -->
             <section id="history-section" class="tab-content">
                 <h2>Epic Moments</h2>
                 <ul id="epic-moments-list"></ul>
+            </section>
+
+            <!-- Wiki Tab -->
+            <section id="wiki-section" class="tab-content">
+                <h2>Resource Wiki</h2>
+                <div id="wiki-resources-list"></div>
             </section>
         </main>
 
