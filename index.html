@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rise of the Hero - Incremental RPG</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="hero">
+            <h1>Rise of the Hero</h1>
+            <p class="tagline">An incremental RPG journey through time and space</p>
+        </header>
+
+        <!-- Main Game Area -->
+        <main id="game-container">
+            <div class="tabs">
+                <button class="tab active" data-tab="upgrade">Upgrades</button>
+                <button class="tab" data-tab="stats">Stats</button>
+                <button class="tab" data-tab="history">History</button>
+            </div>
+
+            <!-- Upgrades Tab -->
+            <section id="upgrade-section" class="tab-content active">
+                <div id="upgrades-list"></div>
+                <div class="add-upgrade-form">
+                    <h3>Add New Upgrade</h3>
+                    <form id="new-upgrade-form">
+                        <input type="text" id="new-upgrade-name" placeholder="Upgrade Name" required>
+                        <input type="number" id="new-upgrade-cost" placeholder="Base Cost" min="10" value="10" required>
+                        <input type="number" id="new-upgrade-multiplier" placeholder="Multiplier (1.5)" step="0.1" min="1.0" value="1.5" required>
+                        <input type="text" id="new-upgrade-description" placeholder="Description">
+                        <button type="submit">Add Upgrade</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Stats Tab -->
+            <section id="stats-section" class="tab-content">
+                <h2>Your Statistics</h2>
+                <div id="stats-display"></div>
+            </section>
+
+            <!-- History Tab -->
+            <section id="history-section" class="tab-content">
+                <h2>Epic Moments</h2>
+                <ul id="epic-moments-list"></ul>
+            </section>
+        </main>
+
+        <!-- Floating Action Button for Mobile -->
+        <button class="fab" onclick="toggleForm()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M19 6h-5V5a2 2 0 00-4 0v1H7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2V8a2 2 0 00-2-2z"/>
+            </svg>
+        </button>
+
+        <!-- Settings Panel -->
+        <aside id="settings-panel">
+            <button class="close-settings" onclick="toggleForm()">Close</button>
+            <div id="settings-options">
+                <p><strong>Current Time:</strong> <span id="current-time"></span></p>
+                <p><strong>Currency:</strong> <span id="currency-display">$<span id="amount"></span></span></p>
+                <p><strong>Total Upgrades Purchased:</strong> <span id="total-upgrades"></span></p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
