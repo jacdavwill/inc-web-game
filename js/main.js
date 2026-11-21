@@ -754,6 +754,12 @@ function toggleForm() {
     panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
 }
 
+// Reset Game - clear local storage and refresh
+function resetGame() {
+    localStorage.removeItem(CONFIG.SAVE_KEY);
+    location.reload();
+}
+
 // Form Submission Handler for Adding New Upgrades
 document.getElementById('new-upgrade-form').addEventListener('submit', (e) => {
     e.preventDefault();
