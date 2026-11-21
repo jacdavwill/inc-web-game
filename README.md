@@ -1,1 +1,1 @@
-# idle-web-game
+# inc-web-game
